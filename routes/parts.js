@@ -27,15 +27,25 @@ router.get('/', async (req, res) => {
             query.partBrand = partBrand;
         }
         
-        // Search in part name and part number
-        if (search) {
+        // Search in part name, part number, car brand, part brand, and description
+        // IMPORTANT: When both carBrand and search are provided (from vehicle finder),
+        // the search parameter contains the model name (e.g., "Swift"), which is NOT
+        // stored in the database. MongoDB's AND logic would require BOTH carBrand AND
+        // search to match, but since model names aren't in the database, this would
+        // return no results. Solution: Only apply search filter if carBrand is NOT provided.
+        // When carBrand is provided, we filter by carBrand only (model search is ignored).
+        if (search && !carBrand) {
+            // Normal search when no carBrand filter
             query.$or = [
                 { partName: { $regex: search, $options: 'i' } },
                 { partNumber: { $regex: search, $options: 'i' } },
                 { carBrand: { $regex: search, $options: 'i' } },
-                { partBrand: { $regex: search, $options: 'i' } }
+                { partBrand: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
             ];
         }
+        // Note: When both carBrand and search are provided, we ignore search
+        // because search contains model name which isn't stored in database
         
         let parts = await Part.find(query).select('-stockQuantity -lowStockThreshold');
         
