@@ -1,7 +1,20 @@
 // Load environment variables FIRST - before any other requires
 const dotenv = require('dotenv');
 const path = require('path');
+
+// Try to load .env file (for local development)
+// On Railway/Render, environment variables are set in the platform dashboard
 dotenv.config({ path: path.join(__dirname, '.env') });
+
+// Log environment status (for debugging)
+if (process.env.NODE_ENV === 'production') {
+    console.log('🔧 Production mode - using platform environment variables');
+    console.log('📋 Checking environment variables...');
+    console.log('   MONGODB_URI:', process.env.MONGODB_URI ? '✅ Set' : '❌ Missing');
+    console.log('   CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ Set' : '❌ Missing');
+    console.log('   CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ Set' : '❌ Missing');
+    console.log('   CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ Set' : '❌ Missing');
+}
 
 // Now load other modules (they can use process.env)
 const express = require('express');
