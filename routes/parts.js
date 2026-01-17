@@ -18,8 +18,17 @@ router.get('/', async (req, res) => {
         }
         
         // Filter by car brand (supports partial matching for vehicle finder)
+        // This handles cases where vehicle finder sends "Maruti Suzuki" but database has "Maruti" or vice versa
         if (carBrand) {
-            query.carBrand = { $regex: new RegExp(carBrand, 'i') };
+            // Split carBrand into words and match if ANY word matches
+            // e.g., "Maruti Suzuki" will match "Maruti", "Suzuki", or "Maruti Suzuki"
+            const brandWords = carBrand.trim().split(/\s+/).filter(word => word.length > 0);
+            if (brandWords.length > 0) {
+                // Create regex that matches if any word from carBrand appears in the database value
+                // This allows "Maruti Suzuki" to match "Maruti", "Suzuki", or "Maruti Suzuki"
+                const brandPattern = brandWords.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+                query.carBrand = { $regex: new RegExp(brandPattern, 'i') };
+            }
         }
         
         // Filter by part brand
