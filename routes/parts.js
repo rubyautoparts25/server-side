@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
             ];
         }
         
-        let parts = await Part.find(query);
+        let parts = await Part.find(query).select('-stockQuantity -lowStockThreshold');
         
         // Sort parts
         if (sortBy) {
@@ -99,7 +99,7 @@ router.get('/', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
     try {
         const { category } = req.params;
-        const parts = await Part.find({ category });
+        const parts = await Part.find({ category }).select('-stockQuantity -lowStockThreshold');
         
         res.json({
             success: true,
@@ -153,7 +153,7 @@ router.post('/', upload.single('image'), async (req, res) => {
             path: req.file.path
         } : 'No file received');
         
-        const { category, carBrand, carModel, carYear, partBrand, partNumber, partName, description, specifications, imageUrl, price } = req.body;
+        const { category, carBrand, carModel, carYear, partBrand, partNumber, partName, description, specifications, imageUrl, price, stockQuantity, lowStockThreshold } = req.body;
         
         let image = imageUrl || null;
         
@@ -233,7 +233,9 @@ router.post('/', upload.single('image'), async (req, res) => {
             image,
             description: description || null,
             specifications: specifications || null,
-            price: price ? parseFloat(price) : null
+            price: price ? parseFloat(price) : null,
+            stockQuantity: stockQuantity ? parseInt(stockQuantity) : 0,
+            lowStockThreshold: lowStockThreshold ? parseInt(lowStockThreshold) : 5
         });
         
         console.log('✅ Part created successfully');
@@ -290,7 +292,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
             path: req.file.path
         } : 'No file received');
         
-        const { category, carBrand, partBrand, partNumber, partName, description, specifications, imageUrl, price } = req.body;
+        const { category, carBrand, partBrand, partNumber, partName, description, specifications, imageUrl, price, stockQuantity, lowStockThreshold } = req.body;
         
         let updateData = {
             category,
@@ -300,7 +302,9 @@ router.put('/:id', upload.single('image'), async (req, res) => {
             partName,
             description: description || null,
             specifications: specifications || null,
-            price: price ? parseFloat(price) : null
+            price: price ? parseFloat(price) : null,
+            stockQuantity: stockQuantity !== undefined ? parseInt(stockQuantity) : undefined,
+            lowStockThreshold: lowStockThreshold !== undefined ? parseInt(lowStockThreshold) : undefined
         };
         
         // Upload new image if provided

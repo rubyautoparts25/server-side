@@ -67,6 +67,16 @@ const partSchema = new mongoose.Schema({
         type: Number,
         default: null,
         min: 0
+    },
+    stockQuantity: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    lowStockThreshold: {
+        type: Number,
+        default: 5,
+        min: 0
     }
 }, {
     timestamps: true
